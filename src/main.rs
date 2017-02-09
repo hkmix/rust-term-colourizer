@@ -35,8 +35,7 @@ fn main() {
     let stdin = std::io::stdin();
 
     for line in stdin.lock().lines() {
-        let text = line.unwrap();
-        let mut mut_text = text.clone();
+        let text = line.unwrap().clone();
 
         // Look for the first RegExp that matches, then colourize
         let mut idx = 0;
@@ -115,7 +114,15 @@ fn read_file(filename: &String) -> Vec<RegexData> {
     let mut captures = 0;
     for (idx, line) in reader.lines().enumerate() {
         let line_text = line.unwrap();
+        if line_text.len() == 0 {
+            continue;
+        }
+
         match line_text.chars().nth(0) {
+            Some('#') => {
+                // Comment, ignore
+                continue;
+            }
             Some('/') => {
                 // Regex
                 let rexp = make_regex(&line_text[1..], idx + 1);
@@ -132,7 +139,7 @@ fn read_file(filename: &String) -> Vec<RegexData> {
                 if captures == 0 {
                     // Need text to stylize
                     println!("Warning: Style without RegExp on line {}.", idx + 1);
-                    break;
+                    continue;
                 }
                 let rest_text = &line_text[1..];
                 match rest_text {
@@ -156,7 +163,7 @@ fn read_file(filename: &String) -> Vec<RegexData> {
             Some('-') => {
                 if captures == 0 {
                     println!("Warning: Delete without RegExp on line {}.", idx + 1);
-                    break;
+                    continue;
                 }
                 captures = 0;
                 items.push(RegexData::NoPrint);
