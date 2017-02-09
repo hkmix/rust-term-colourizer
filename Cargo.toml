@@ -1,0 +1,8 @@
+[package]
+name = "rust-term-colorizer"
+version = "0.1.0"
+authors = ["Jack Zhou <jack@zzh.ca>"]
+
+[dependencies]
+ansi_term = "0.9"
+regex = "0.2"
