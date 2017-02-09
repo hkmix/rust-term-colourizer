@@ -49,7 +49,7 @@ Here's a sample file that can be used to colourize Org-mode agenda output:
 /TODO|NEXT|IN-PROGRESS
 =cyan
 
-/:quiz:|:midterm:|:final:$
+/:quiz:|:midterm:|:final:
 =red
 
 /:review:
