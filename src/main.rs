@@ -22,6 +22,7 @@ enum RegexData {
     Bold,
     Underline,
     NoPrint,
+    Default,
 }
 
 fn main() {
@@ -72,6 +73,11 @@ fn main() {
                         }
                         RegexData::Underline => {
                             style = style.underline();
+                        }
+                        RegexData::Default => {
+                            // Okay, print it now
+                            println!("{}", style.paint(&*text));
+                            printed = true;
                         }
                         RegexData::Col(colour) => {
                             // Okay, print it now
@@ -180,6 +186,7 @@ fn read_file(filename: &String) -> Vec<RegexData> {
                     "purple" => items.push(RegexData::Col(Colour::Purple)),
                     "cyan" => items.push(RegexData::Col(Colour::Cyan)),
                     "white" => items.push(RegexData::Col(Colour::White)),
+                    "default" => items.push(RegexData::Default),
                     _ => {
                         // Invalid colour
                         println!("Invalid colour specified on line {}.", idx + 1);
