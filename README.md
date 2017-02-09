@@ -58,3 +58,7 @@ Here's a sample file that can be used to colourize Org-mode agenda output:
 /==========
 -
 ```
+
+### Sample output
+
+![Sample output][img/screenshot.png]
