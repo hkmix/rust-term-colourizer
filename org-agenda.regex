@@ -1,0 +1,25 @@
+# Comment
+
+/^Global list
++bu
+=white
+
+/^Week-agenda
++bu
+=white
+
+/^[A-Za-z]+day
++b
+=green
+
+/TODO|NEXT|IN-PROGRESS
+=cyan
+
+/:quiz:|:midterm:|:final:
+=red
+
+/:review:
+=yellow
+
+/==========
+-
