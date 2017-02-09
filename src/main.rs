@@ -7,17 +7,21 @@ use std::io::BufReader;
 use std::fs::File;
 
 use ansi_term::Colour;
+use ansi_term::Style;
 use regex::Regex;
 
 // Constants
 /// Error exit code.
 const EXIT_ERROR: i32 = 1;
 
-/// Regex enum containing a `regex::Regex` and a `ansi_term::Colour`.
+/// Regex enum containing either a `regex::Regex` and a `ansi_term::Colour`.
 #[derive(Debug)]
 enum RegexData {
     RegExp(Regex),
     Col(Colour),
+    Bold,
+    Underline,
+    NoPrint,
 }
 
 fn main() {
@@ -27,9 +31,67 @@ fn main() {
     }
 
     let file: String = env::args().nth(1).unwrap();
-    let file_data = read_file(&file);
+    let r_data = read_file(&file);
+    let stdin = std::io::stdin();
 
-    println!("Data: {:#?}", file_data);
+    for line in stdin.lock().lines() {
+        let text = line.unwrap();
+        let mut mut_text = text.clone();
+
+        // Look for the first RegExp that matches, then colourize
+        let mut idx = 0;
+        let mut printed = false;
+
+        loop {
+            if idx >= r_data.len() {
+                break;
+            }
+
+            let mut captures: Option<regex::Captures> = None;
+            match r_data[idx] {
+                RegexData::RegExp(ref rexp) => {
+                    // Matched RegExp
+                    captures = rexp.captures(&text);
+                }
+                _ => {}
+            }
+
+            let mut style = Style::new();
+            if captures.is_some() {
+                loop {
+                    if printed {
+                        break;
+                    }
+                    // Have a RegExp match, get colours or styles
+                    idx += 1;
+                    match r_data[idx] {
+                        RegexData::NoPrint => {
+                            printed = true;
+                        }
+                        RegexData::Bold => {
+                            style = style.bold();
+                        }
+                        RegexData::Underline => {
+                            style = style.underline();
+                        }
+                        RegexData::Col(colour) => {
+                            // Okay, print it now
+                            println!("{}", style.fg(colour).paint(&*text));
+                            printed = true;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+
+            idx += 1;
+        }
+
+        if !printed {
+            // No match, just print it normally
+            println!("{}", text);
+        }
+    }
 }
 
 /// Read a file and generate a corresponding `Vec<RegexData>` containing read lines.
@@ -65,6 +127,39 @@ fn read_file(filename: &String) -> Vec<RegexData> {
                     captures += rexp.captures_len();
                     items.push(RegexData::RegExp(rexp));
                 }
+            }
+            Some('+') => {
+                if captures == 0 {
+                    // Need text to stylize
+                    println!("Warning: Style without RegExp on line {}.", idx + 1);
+                    break;
+                }
+                let rest_text = &line_text[1..];
+                match rest_text {
+                    "bu" | "ub" => {
+                        items.push(RegexData::Bold);
+                        items.push(RegexData::Underline);
+                    }
+                    "b" => {
+                        items.push(RegexData::Bold);
+                    }
+                    "u" => {
+                        items.push(RegexData::Underline);
+                    }
+                    _ => {
+                        // Invalid style
+                        println!("Warning: Invalid style specified on line {}.", idx + 1);
+                        println!("Input: {}", rest_text);
+                    }
+                }
+            }
+            Some('-') => {
+                if captures == 0 {
+                    println!("Warning: Delete without RegExp on line {}.", idx + 1);
+                    break;
+                }
+                captures = 0;
+                items.push(RegexData::NoPrint);
             }
             Some('=') => {
                 // Colour
