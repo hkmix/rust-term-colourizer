@@ -1,5 +1,5 @@
 [package]
-name = "rust-term-colorizer"
+name = "rust-term-colourizer"
 version = "0.1.0"
 authors = ["Jack Zhou <jack@zzh.ca>"]
 
